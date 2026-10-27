@@ -1,0 +1,93 @@
+{% load static icons %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Dashboard{% endblock %} · TaskFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'todo/style.css' %}">
+</head>
+<body>
+{% with page=request.resolver_match.url_name s=request.GET.status c=request.GET.category %}
+<div class="app">
+
+  <aside class="sidebar">
+    <a class="logo" href="{% url 'todo:dashboard' %}"><span class="logo-mark">{% icon "check" 18 %}</span> TaskFlow</a>
+
+    <nav class="nav">
+      <a class="nav-link {% if page == 'dashboard' %}active{% endif %}" href="{% url 'todo:dashboard' %}">
+        {% icon "dashboard" %} Dashboard
+      </a>
+      <a class="nav-link {% if page == 'tasks' and not s and not c or page == 'tasks' and s == 'all' %}active{% endif %}" href="{% url 'todo:tasks' %}">
+        {% icon "list" %} All tasks <span class="count">{{ nav_counts.active }}</span>
+      </a>
+      <a class="nav-link {% if s == 'today' %}active{% endif %}" href="{% url 'todo:tasks' %}?status=today">
+        {% icon "sun" %} Today <span class="count">{{ nav_counts.today }}</span>
+      </a>
+      <a class="nav-link {% if s == 'upcoming' %}active{% endif %}" href="{% url 'todo:tasks' %}?status=upcoming">
+        {% icon "calendar" %} Upcoming <span class="count">{{ nav_counts.upcoming }}</span>
+      </a>
+      <a class="nav-link {% if s == 'overdue' %}active{% endif %}" href="{% url 'todo:tasks' %}?status=overdue">
+        {% icon "alert" %} Overdue <span class="count {% if nav_counts.overdue %}alert{% endif %}">{{ nav_counts.overdue }}</span>
+      </a>
+      <a class="nav-link {% if s == 'completed' %}active{% endif %}" href="{% url 'todo:tasks' %}?status=completed">
+        {% icon "check-circle" %} Completed <span class="count">{{ nav_counts.completed }}</span>
+      </a>
+
+      <div class="nav-label">Categories <a href="{% url 'todo:categories' %}">Manage</a></div>
+      {% for cat in nav_categories %}
+        <a class="nav-link {% if c == cat.pk|stringformat:'s' %}active{% endif %}" href="{% url 'todo:tasks' %}?category={{ cat.pk }}">
+          <i class="cat-dot bg-{{ cat.color }}"></i> {{ cat.name }} <span class="count">{{ cat.open_count }}</span>
+        </a>
+      {% empty %}
+        <a class="nav-link" href="{% url 'todo:categories' %}">{% icon "plus" %} Add a category</a>
+      {% endfor %}
+
+      <div class="nav-label">Account</div>
+      <a class="nav-link {% if page == 'profile' %}active{% endif %}" href="{% url 'todo:profile' %}">{% icon "user" %} Profile</a>
+    </nav>
+
+    <div class="sidebar-user">
+      <span class="avatar">{{ user.first_name|default:user.username|first|upper }}</span>
+      <div class="who">
+        <b>{{ user.get_full_name|default:user.username }}</b>
+        <a href="{% url 'todo:profile' %}">@{{ user.username }}</a>
+      </div>
+      <form method="post" action="{% url 'todo:logout' %}">
+        {% csrf_token %}
+        <button class="icon-btn" type="submit" title="Log out" aria-label="Log out">{% icon "logout" %}</button>
+      </form>
+    </div>
+  </aside>
+  <div class="backdrop" data-toggle-nav></div>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" type="button" data-toggle-nav aria-label="Open menu">{% icon "menu" 20 %}</button>
+      <form class="search" method="get" action="{% url 'todo:tasks' %}">
+        {% icon "search" 16 %}
+        <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search tasks…" aria-label="Search tasks">
+      </form>
+      <div class="spacer"></div>
+      <a class="btn" href="{% url 'todo:task_create' %}">{% icon "plus" 16 %} <span class="label">New task</span></a>
+    </header>
+
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endwith %}
+
+{% if messages %}
+<div class="toasts">
+  {% for message in messages %}
+    <div class="toast">{% icon "check-circle" 18 %} <span>{{ message }}</span> <button type="button" aria-label="Dismiss">{% icon "x" 14 %}</button></div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<script src="{% static 'todo/app.js' %}"></script>
+</body>
+</html>

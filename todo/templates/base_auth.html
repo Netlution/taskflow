@@ -1,0 +1,43 @@
+{% load static icons %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Welcome{% endblock %} · TaskFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'todo/style.css' %}">
+</head>
+<body>
+  <div class="auth">
+
+    <aside class="auth-brand">
+      <span class="logo"><span class="logo-mark">{% icon "check" 18 %}</span> TaskFlow</span>
+
+      <div>
+        <h2>{% block brand_heading %}Organise your day. Finish what matters.{% endblock %}</h2>
+        <p>Plan tasks, set priorities and due dates, and watch your progress grow — all in one calm, focused dashboard.</p>
+        <ul class="auth-features">
+          <li><span class="tick">{% icon "check" 16 %}</span> Priorities, due dates &amp; categories</li>
+          <li><span class="tick">{% icon "chart" 16 %}</span> Weekly progress at a glance</li>
+          <li><span class="tick">{% icon "search" 16 %}</span> Search and filter in seconds</li>
+        </ul>
+      </div>
+
+      <div class="auth-preview" aria-hidden="true">
+        <div class="row done"><i class="dot on"></i><span>Send invoice to client</span></div>
+        <div class="row"><i class="dot"></i><span>Design review at 2pm</span></div>
+        <div class="row"><i class="dot"></i><span>Plan next week's goals</span></div>
+      </div>
+    </aside>
+
+    <main class="auth-main">
+      <div class="auth-card">
+        <a class="logo mobile-logo" href="{% url 'todo:login' %}"><span class="logo-mark">{% icon "check" 18 %}</span> TaskFlow</a>
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+  </div>
+</body>
+</html>

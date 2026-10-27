@@ -1,0 +1,40 @@
+{% extends "base_app.html" %}
+{% load icons %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div class="profile-head">
+    <span class="avatar">{{ user.first_name|default:user.username|first|upper }}</span>
+    <div>
+      <h1>{{ user.get_full_name|default:user.username }}</h1>
+      <p>@{{ user.username }} · Member since {{ user.date_joined|date:"F Y" }} · {{ done }} of {{ total }} tasks completed</p>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2 grid-even">
+
+  <form method="post" class="card" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="action" value="profile">
+    <div class="card-head"><h3>{% icon "user" 16 %} Personal details</h3></div>
+    <div class="field-row">
+      {% include "_field.html" with field=profile_form.first_name %}
+      {% include "_field.html" with field=profile_form.last_name %}
+    </div>
+    {% include "_field.html" with field=profile_form.email %}
+    <button class="btn" type="submit">Save details</button>
+  </form>
+
+  <form method="post" class="card" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="action" value="password">
+    <div class="card-head"><h3>{% icon "alert" 16 %} Change password</h3></div>
+    {% include "_field.html" with field=password_form.old_password %}
+    {% include "_field.html" with field=password_form.new_password1 %}
+    {% include "_field.html" with field=password_form.new_password2 %}
+    <button class="btn" type="submit">Update password</button>
+  </form>
+</div>
+{% endblock %}

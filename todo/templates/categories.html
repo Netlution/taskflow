@@ -1,0 +1,59 @@
+{% extends "base_app.html" %}
+{% load icons %}
+{% block title %}Categories{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Categories</h1>
+    <p>Group your tasks so you can focus on one area at a time.</p>
+  </div>
+</div>
+
+<div class="grid-2 grid-side">
+
+  <section class="cat-grid">
+    {% for cat in cats %}
+      <div class="card cat-card">
+        <div class="head">
+          <span class="swatch bg-{{ cat.color }}">{% icon "tag" 18 %}</span>
+          <div><b>{{ cat.name }}</b><div class="muted" style="font-size:13px">{{ cat.open_count }} open · {{ cat.total }} total</div></div>
+        </div>
+        <div class="foot">
+          <a href="{% url 'todo:tasks' %}?category={{ cat.pk }}">View tasks →</a>
+          <form method="post" action="{% url 'todo:category_delete' cat.pk %}">
+            {% csrf_token %}
+            <button class="icon-btn danger" type="submit" title="Delete category" aria-label="Delete category"
+                    data-confirm="Delete “{{ cat.name }}”? Its tasks will be kept without a category.">{% icon "trash" 16 %}</button>
+          </form>
+        </div>
+      </div>
+    {% empty %}
+      <div class="card empty" style="grid-column:1/-1">
+        <span class="ico">{% icon "tag" 26 %}</span>
+        <h3>No categories yet</h3>
+        <p>Create your first one using the form.</p>
+      </div>
+    {% endfor %}
+  </section>
+
+  <form method="post" class="card" novalidate>
+    {% csrf_token %}
+    <div class="card-head"><h3>{% icon "plus" 16 %} New category</h3></div>
+    {% include "_field.html" with field=form.name %}
+    <div class="field">
+      <label>Colour</label>
+      <div class="color-picker">
+        {% for value, label in form.fields.color.choices %}
+          <label title="{{ label }}">
+            <input type="radio" name="color" value="{{ value }}" {% if form.color.value == value %}checked{% endif %}>
+            <span class="bg-{{ value }}"></span>
+          </label>
+        {% endfor %}
+      </div>
+      {{ form.color.errors }}
+    </div>
+    <button class="btn btn-block" type="submit">Create category</button>
+  </form>
+</div>
+{% endblock %}

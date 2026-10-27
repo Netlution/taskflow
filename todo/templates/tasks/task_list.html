@@ -1,0 +1,69 @@
+{% extends "base_app.html" %}
+{% load icons %}
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ page_title }}</h1>
+    <p>{% if q %}Results for “{{ q }}” · {% endif %}{{ todos|length }} task{{ todos|length|pluralize }}</p>
+  </div>
+  <a class="btn" href="{% url 'todo:task_create' %}{% if category %}?category={{ category }}{% endif %}">{% icon "plus" 16 %} New task</a>
+</div>
+
+<div class="toolbar">
+  <nav class="tabs">
+    <a class="{% if status == 'all' %}on{% endif %}" href="?status=all&priority={{ priority }}&category={{ category }}&sort={{ sort }}&q={{ q|urlencode }}">All</a>
+    <a class="{% if status == 'active' %}on{% endif %}" href="?status=active&priority={{ priority }}&category={{ category }}&sort={{ sort }}&q={{ q|urlencode }}">Active</a>
+    <a class="{% if status == 'today' %}on{% endif %}" href="?status=today&priority={{ priority }}&category={{ category }}&sort={{ sort }}&q={{ q|urlencode }}">Today</a>
+    <a class="{% if status == 'upcoming' %}on{% endif %}" href="?status=upcoming&priority={{ priority }}&category={{ category }}&sort={{ sort }}&q={{ q|urlencode }}">Upcoming</a>
+    <a class="{% if status == 'overdue' %}on{% endif %}" href="?status=overdue&priority={{ priority }}&category={{ category }}&sort={{ sort }}&q={{ q|urlencode }}">Overdue</a>
+    <a class="{% if status == 'completed' %}on{% endif %}" href="?status=completed&priority={{ priority }}&category={{ category }}&sort={{ sort }}&q={{ q|urlencode }}">Completed</a>
+  </nav>
+
+  <form class="filters" method="get">
+    <input type="hidden" name="status" value="{{ status }}">
+    <input type="hidden" name="q" value="{{ q }}">
+    <select name="priority" data-autosubmit aria-label="Priority">
+      <option value="">Any priority</option>
+      {% for value, label in priorities %}
+        <option value="{{ value }}" {% if priority == value %}selected{% endif %}>{{ label }} priority</option>
+      {% endfor %}
+    </select>
+    <select name="category" data-autosubmit aria-label="Category">
+      <option value="">All categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat.pk }}" {% if category == cat.pk|stringformat:'s' %}selected{% endif %}>{{ cat.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="sort" data-autosubmit aria-label="Sort">
+      <option value="due" {% if sort == 'due' %}selected{% endif %}>Sort: Due date</option>
+      <option value="priority" {% if sort == 'priority' %}selected{% endif %}>Sort: Priority</option>
+      <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Sort: Newest</option>
+    </select>
+    <noscript><button class="btn btn-sm" type="submit">Apply</button></noscript>
+  </form>
+</div>
+
+<section class="card list-card">
+  {% if todos %}
+    <ul class="tasks">
+      {% for todo in todos %}{% include "tasks/_task_item.html" %}{% endfor %}
+    </ul>
+  {% else %}
+    <div class="empty">
+      <span class="ico">{% icon "check-circle" 26 %}</span>
+      <h3>{% if q %}No matches found{% else %}Nothing here{% endif %}</h3>
+      <p>{% if q %}Try a different search or clear the filters.{% else %}Add a task and it will show up in this list.{% endif %}</p>
+      <a class="btn" href="{% url 'todo:task_create' %}">{% icon "plus" 16 %} Add a task</a>
+    </div>
+  {% endif %}
+</section>
+
+{% if nav_counts.completed and status == 'completed' %}
+<form method="post" action="{% url 'todo:clear_completed' %}" style="margin-top:16px; text-align:right">
+  {% csrf_token %}
+  <button class="btn btn-ghost btn-sm" type="submit" data-confirm="Delete all completed tasks? This cannot be undone.">{% icon "trash" 14 %} Clear all completed</button>
+</form>
+{% endif %}
+{% endblock %}

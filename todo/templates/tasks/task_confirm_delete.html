@@ -1,0 +1,19 @@
+{% extends "base_app.html" %}
+{% load icons %}
+{% block title %}Delete task{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:520px">
+  <div class="empty" style="padding:24px 8px">
+    <span class="ico" style="background:var(--danger-soft); color:var(--danger)">{% icon "trash" 26 %}</span>
+    <h3>Delete this task?</h3>
+    <p>“{{ todo.title }}” will be permanently removed. This cannot be undone.</p>
+    <form method="post" style="display:flex; gap:10px; justify-content:center">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.GET.next }}">
+      <button class="btn btn-danger" type="submit">Yes, delete it</button>
+      <a class="btn btn-ghost" href="{{ request.GET.next|default:'/tasks/' }}">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

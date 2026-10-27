@@ -1,0 +1,45 @@
+{% load icons %}
+<li class="task {% if todo.completed %}done{% endif %}">
+
+  <form method="post" action="{% url 'todo:task_toggle' todo.srno %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <button class="task-check" type="submit" aria-label="{% if todo.completed %}Mark as not done{% else %}Mark as done{% endif %}">
+      {% icon "check" 13 %}
+    </button>
+  </form>
+
+  <div class="task-body">
+    <div class="task-title">{{ todo.title }}</div>
+    {% if todo.description and not compact %}
+      <div class="task-desc">{{ todo.description|truncatechars:140 }}</div>
+    {% endif %}
+
+    <div class="task-meta">
+      <span class="badge {{ todo.priority }}">{% icon "flag" 12 %} {{ todo.get_priority_display }}</span>
+
+      {% if todo.category %}
+        <span class="badge"><i class="cat-dot bg-{{ todo.category.color }}" style="margin:0"></i> {{ todo.category.name }}</span>
+      {% endif %}
+
+      {% if todo.due_date %}
+        {% if todo.is_overdue %}
+          <span class="badge overdue">{% icon "alert" 12 %} Overdue · {{ todo.due_date|date:"M j" }}</span>
+        {% elif todo.is_due_today %}
+          <span class="badge today">{% icon "sun" 12 %} Today</span>
+        {% else %}
+          <span class="badge">{% icon "calendar" 12 %} {{ todo.due_date|date:"D, M j" }}</span>
+        {% endif %}
+      {% endif %}
+
+      {% if todo.completed and todo.completed_at %}
+        <span class="badge low">{% icon "check" 12 %} Done {{ todo.completed_at|timesince }} ago</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="task-actions">
+    <a class="icon-btn" href="{% url 'todo:task_edit' todo.srno %}?next={{ request.get_full_path|urlencode }}" title="Edit" aria-label="Edit">{% icon "edit" 16 %}</a>
+    <a class="icon-btn danger" href="{% url 'todo:task_delete' todo.srno %}?next={{ request.get_full_path|urlencode }}" title="Delete" aria-label="Delete">{% icon "trash" 16 %}</a>
+  </div>
+</li>

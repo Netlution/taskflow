@@ -1,0 +1,28 @@
+{% extends "base_auth.html" %}
+{% block title %}Sign up{% endblock %}
+{% block brand_heading %}Your calm, focused space to get things done.{% endblock %}
+
+{% block content %}
+<h1>Create your account</h1>
+<p class="lead">It takes less than a minute. Free forever.</p>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="form-error">{{ form.non_field_errors|join:" " }}</div>
+  {% endif %}
+
+  <div class="field-row">
+    {% include "_field.html" with field=form.first_name %}
+    {% include "_field.html" with field=form.username %}
+  </div>
+  {% include "_field.html" with field=form.email %}
+  {% include "_field.html" with field=form.password1 %}
+  {% include "_field.html" with field=form.password2 %}
+
+  <button class="btn btn-block" type="submit">Create account</button>
+</form>
+
+<p class="auth-switch">Already have an account? <a href="{% url 'todo:login' %}">Log in</a></p>
+{% endblock %}

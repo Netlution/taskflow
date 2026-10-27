@@ -1,0 +1,30 @@
+{% extends "base_app.html" %}
+{% load icons %}
+{% block title %}{% if is_edit %}Edit task{% else %}New task{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{% if is_edit %}Edit task{% else %}Create a new task{% endif %}</h1>
+    <p>{% if is_edit %}Update the details and save.{% else %}Give it a title, then add as much detail as you like.{% endif %}</p>
+  </div>
+</div>
+
+<form method="post" class="card" style="max-width:680px" novalidate>
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.GET.next }}">
+
+  {% include "_field.html" with field=form.title %}
+  {% include "_field.html" with field=form.description %}
+  <div class="field-row">
+    {% include "_field.html" with field=form.category %}
+    {% include "_field.html" with field=form.priority %}
+  </div>
+  {% include "_field.html" with field=form.due_date %}
+
+  <div style="display:flex; gap:10px; margin-top:8px">
+    <button class="btn" type="submit">{% icon "check" 16 %} {% if is_edit %}Save changes{% else %}Create task{% endif %}</button>
+    <a class="btn btn-ghost" href="{{ request.GET.next|default:'/tasks/' }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

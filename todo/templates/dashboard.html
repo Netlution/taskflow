@@ -1,0 +1,119 @@
+{% extends "base_app.html" %}
+{% load icons %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Hello, {{ user.first_name|default:user.username }} 👋</h1>
+    <p>{{ today|date:"l, F j" }} · {% if due_today %}You have {{ due_today|length }} task{{ due_today|length|pluralize }} due today.{% else %}Nothing due today. Nice!{% endif %}</p>
+  </div>
+</div>
+
+<section class="stats">
+  <div class="card stat"><span class="ico brand">{% icon "list" 22 %}</span><div><b>{{ stats.total }}</b><small>Total tasks</small></div></div>
+  <div class="card stat"><span class="ico ok">{% icon "check-circle" 22 %}</span><div><b>{{ stats.completed }}</b><small>Completed</small></div></div>
+  <div class="card stat"><span class="ico warn">{% icon "clock" 22 %}</span><div><b>{{ stats.pending }}</b><small>In progress</small></div></div>
+  <div class="card stat"><span class="ico danger">{% icon "alert" 22 %}</span><div><b>{{ stats.overdue }}</b><small>Overdue</small></div></div>
+</section>
+
+<section class="card" style="margin-bottom:20px">
+  <div class="card-head"><h3>{% icon "plus" 16 %} Quick add</h3><a href="{% url 'todo:task_create' %}">More options</a></div>
+  <form class="quick-add" method="post" action="{% url 'todo:task_create' %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{% url 'todo:dashboard' %}">
+    {{ form.title }}
+    {{ form.priority }}
+    {{ form.due_date }}
+    <button class="btn" type="submit">{% icon "plus" 16 %} Add task</button>
+  </form>
+</section>
+
+<div class="grid-2">
+
+  <div class="stack">
+
+    {% if overdue %}
+    <section class="card">
+      <div class="card-head"><h3 style="color:var(--danger)">{% icon "alert" 16 %} Overdue</h3><a href="{% url 'todo:tasks' %}?status=overdue">View all</a></div>
+      <ul class="tasks">{% for todo in overdue %}{% include "tasks/_task_item.html" with compact=True %}{% endfor %}</ul>
+    </section>
+    {% endif %}
+
+    <section class="card">
+      <div class="card-head"><h3>{% icon "sun" 16 %} Due today</h3><a href="{% url 'todo:tasks' %}?status=today">View all</a></div>
+      {% if due_today %}
+        <ul class="tasks">{% for todo in due_today %}{% include "tasks/_task_item.html" with compact=True %}{% endfor %}</ul>
+      {% else %}
+        <div class="empty small">No tasks due today. Use Quick add to plan one.</div>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h3>{% icon "calendar" 16 %} Coming up this week</h3><a href="{% url 'todo:tasks' %}?status=upcoming">View all</a></div>
+      {% if upcoming %}
+        <ul class="tasks">{% for todo in upcoming %}{% include "tasks/_task_item.html" with compact=True %}{% endfor %}</ul>
+      {% else %}
+        <div class="empty small">Nothing scheduled for the next 7 days.</div>
+      {% endif %}
+    </section>
+  </div>
+
+  <!-- ===== Right column ===== -->
+  <div class="stack">
+
+    <section class="card">
+      <div class="card-head"><h3>{% icon "chart" 16 %} Overall progress</h3></div>
+      <div class="ring-wrap">
+        <div class="ring" style="--p: {{ stats.rate }}" data-label="{{ stats.rate }}%"></div>
+        <ul>
+          <li><i style="background:var(--brand)"></i> {{ stats.completed }} completed</li>
+          <li><i style="background:var(--line)"></i> {{ stats.pending }} remaining</li>
+          <li><i style="background:var(--danger)"></i> {{ high_priority }} high priority open</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h3>{% icon "check-circle" 16 %} Completed this week</h3><span class="muted" style="font-size:13px">{{ week_total }} total</span></div>
+      <div class="chart">
+        {% for d in week %}
+          <div class="col {% if forloop.last %}today{% endif %}">
+            <div class="bar-track"><div class="bar" style="height: {{ d.height }}%">{% if d.count %}<span>{{ d.count }}</span>{% endif %}</div></div>
+            <small>{{ d.label }}</small>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h3>{% icon "tag" 16 %} By category</h3><a href="{% url 'todo:categories' %}">Manage</a></div>
+      {% if categories %}
+        <div class="cat-progress">
+          {% for c in categories %}
+            <div>
+              <div class="top"><span><i class="cat-dot bg-{{ c.color }}" style="margin:0"></i> {{ c.name }}</span><span class="muted">{{ c.done }}/{{ c.total }}</span></div>
+              <div class="progress"><i class="bg-{{ c.color }}" style="width: {{ c.percent }}%"></i></div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty small">Give tasks a category to see progress here.</div>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h3>{% icon "check" 16 %} Recently completed</h3></div>
+      {% if recent_done %}
+        <ul class="done-list">
+          {% for todo in recent_done %}
+            <li><span class="ico ok">{% icon "check" 12 %}</span> <span class="t">{{ todo.title }}</span> <small>{{ todo.completed_at|date:"M j" }}</small></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty small">Finished tasks will show up here.</div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}
